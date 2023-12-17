@@ -52,9 +52,6 @@ namespace NorskaLibExamples.Spreadsheets
 ```
 _**Important!** Make sure you spell variables names exactly as columns headers in the spreadsheet._
 
-Now you can create SpreadsheetContainer.asset which u can use like this:
-![container-inspector](https://drive.google.com/uc?id=16Rg4NIyj5c8-Qjq5phW0konDMRMKNN21)
-
 ## Improting the Spreadsheet
 ![container-inspector](https://drive.google.com/uc?id=1xT_18Z9hEKpnFv4j71CUMWJJ6zlE8ua-)
 
