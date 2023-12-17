@@ -1,0 +1,17 @@
+{
+  "name": "com.norska-lib.spreadsheets",
+  "version": "1.0.0",
+  "displayName": "NorskaLib Spreadsheets",
+  "description": "Unity Editor tool, which helps design game-logic database (such as characters, weapons, items stats etc.) using Google Spreadsheets.",
+  "unity": "2021.3",
+  "keywords": [
+    "google",
+    "spreadsheet",
+    "database"
+  ],
+  "author": {
+    "name": "Norska Games",
+    "email": "norskagames@gmail.com"
+  },
+  "type": "tool"
+}
