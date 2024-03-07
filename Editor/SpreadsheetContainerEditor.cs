@@ -1,9 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 
 namespace NorskaLib.Spreadsheets
@@ -14,6 +14,7 @@ namespace NorskaLib.Spreadsheets
         private const string RelativePathNotation = "..";
 
         private SpreadsheetsContainerBase container;
+        private object content;
         private SpreadsheetImporter importer;
         private string[] possibleTogglesIds;
 
@@ -30,16 +31,16 @@ namespace NorskaLib.Spreadsheets
                 base.OnInspectorGUI();
                 return;
             }
-            var content = contentField.GetValue(container);
+            content = contentField.GetValue(container);
 
             container.foldoutImportGUI = EditorGUILayout.BeginFoldoutHeaderGroup(container.foldoutImportGUI, "Import");
             if (container.foldoutImportGUI)
-                DrawImportGUI(content);
+                DrawImportGUI();
             EditorGUILayout.EndFoldoutHeaderGroup();
 
             container.foldoutSerializationGUI = EditorGUILayout.BeginFoldoutHeaderGroup(container.foldoutSerializationGUI, "Serialization");
             if (container.foldoutSerializationGUI)
-                DrawSerializationGUI(content);
+                DrawSerializationGUI();
             EditorGUILayout.EndFoldoutHeaderGroup();
 
             EditorGUILayout.Space(16);
@@ -52,16 +53,15 @@ namespace NorskaLib.Spreadsheets
             }
         }
 
-        void DrawImportGUI(object content)
+        void DrawImportGUI()
         {
             var listsFieldBinding = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
-            var contentFields = content.GetType().GetFields(listsFieldBinding);
-            var listsFields = contentFields
+            var contentFields = content.GetType().GetFields(listsFieldBinding)
                 .Where(fi => Attribute.IsDefined(fi, typeof(SpreadsheetPageAttribute)))
                 .OrderBy(fi => fi.Name)
                 .ToArray();
 
-            possibleTogglesIds ??= listsFields
+            possibleTogglesIds ??= contentFields
                     .Select(fi => fi.Name)
                     .ToArray();
 
@@ -93,26 +93,8 @@ namespace NorskaLib.Spreadsheets
 
             if (GUILayout.Button("Import"))
             {
-                if (!container.selectedTogglesIds.Any())
-                {
-                    Debug.LogWarning("Nothing is selected to import");
-                    return;
-                }
-
-                if (string.IsNullOrWhiteSpace(container.documentId))
-                    throw new Exception($"Document ID is not specified!");
-
-
-                EditorUtility.DisplayProgressBar("Downloading definitions", "Initializing...", 0);
-
-                var targetListsFields = listsFields.Where(fi => container.selectedTogglesIds.Contains(fi.Name)).ToArray();
-                importer = new SpreadsheetImporter(content, targetListsFields, container.documentId);
-
-                importer.onComplete += OnImportQueueComplete;
-                importer.onOutputChanged += OnOutputChanged;
-                importer.onProgressChanged += OnProgressChanged;
-
-                importer.Run();
+                var selectedContentFields = contentFields.Where(fi => container.selectedTogglesIds.Contains(fi.Name)).ToArray();
+                OnClickImport(selectedContentFields);
             }
             EditorGUI.EndDisabledGroup();
 
@@ -139,7 +121,7 @@ namespace NorskaLib.Spreadsheets
             #endregion
         }
 
-        void DrawSerializationGUI(object content)
+        void DrawSerializationGUI()
         {
             #region Settings fields
 
@@ -210,6 +192,30 @@ namespace NorskaLib.Spreadsheets
                 container.selectedTogglesIds.Remove(toggleId);
         }
 
+        void OnClickImport(IEnumerable<FieldInfo> selectedContentFields)
+        {
+            if (!container.selectedTogglesIds.Any())
+            {
+                Debug.LogWarning("Nothing is selected to import");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(container.documentId))
+                throw new Exception($"Document ID is not specified!");
+
+
+            EditorUtility.DisplayProgressBar("Downloading definitions", "Initializing...", 0);
+
+            importer = new SpreadsheetImporter(content, selectedContentFields.ToArray(), container.documentId);
+
+            importer.onComplete += OnImportQueueComplete;
+            importer.onOutputChanged += OnOutputChanged;
+            importer.onProgressChanged += OnProgressChanged;
+            importer.onOperationFailed += OnOperationFailed;
+
+            importer.Run();
+        }
+
         void OnProgressChanged()
         {
             EditorUtility.DisplayProgressBar("Downloading definitions", importer.Output, importer.Progress);
@@ -229,6 +235,18 @@ namespace NorskaLib.Spreadsheets
             importer.onComplete -= OnImportQueueComplete;
             importer.onOutputChanged -= OnOutputChanged;
             importer.onProgressChanged -= OnProgressChanged;
+            importer.onOperationFailed -= OnOperationFailed;
+            importer = null;
+        }
+
+        void OnOperationFailed(string message)
+        {
+            EditorUtility.ClearProgressBar();
+
+            importer.onComplete -= OnImportQueueComplete;
+            importer.onOutputChanged -= OnOutputChanged;
+            importer.onProgressChanged -= OnProgressChanged;
+            importer.onOperationFailed -= OnOperationFailed;
             importer = null;
         }
     } 
