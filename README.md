@@ -9,7 +9,7 @@ Unity Editor tool, which helps design game-logic database (such as characters, w
 ## Installation
 To install this package using Unity Package Manager simply insert this address:
 ```
-https://github.com/NorskaGames/NorskaLibUPM.git?path=/Spreadsheets
+https://github.com/NorskaGames/NorskaLib.Spreadsheets.git
 ```
 ## Setting up the Spreadsheet
 
