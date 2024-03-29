@@ -1,5 +1,5 @@
 # NorskaLib Spreadsheets
-Switch language: RUS | **ENG**
+Switch language: [RUS](https://github.com/NorskaGames/NorskaLib.Spreadsheets/blob/master/README.ru.md) | **ENG**
 
 Unity Editor tool, which helps design game-logic database (such as characters, weapons, items stats etc.) using Google Spreadsheets.
 
