@@ -11,6 +11,10 @@ To install this package using Unity Package Manager simply insert this address:
 ```
 https://github.com/NorskaGames/NorskaLib.Spreadsheets.git
 ```
+**Important:** You need to have Git installed in your OS. You can get one from here:
+```
+https://git-scm.com/
+```
 ## Setting up the Spreadsheet
 
 Create your Spreadsheet and make sure you enable access via link:
