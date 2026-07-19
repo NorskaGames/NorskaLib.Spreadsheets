@@ -352,8 +352,6 @@ namespace NorskaLib.Spreadsheets
         private void PopulateField(FieldInfo targetContentField, string[][] table)
         {
             ResolveContentType(targetContentField, out var contentType, out var contentFieldType);
-            Debug.Log($"[SpreadsheetImporter]Populating field '{targetContentField.Name}' of type {contentType.Name} " +
-                      $"as {contentFieldType} from spreadsheet page '{GetPageName(targetContentField)}'.");
 
             if (table.Length == 0)
                 throw new InvalidDataException($"Spreadsheet page '{GetPageName(targetContentField)}' is empty.");
@@ -562,8 +560,6 @@ namespace NorskaLib.Spreadsheets
 
         public static object Parse(string value, Type type)
         {
-            Debug.Log($"[SpreadsheetImporter]Parsing value '{value}' to type {type.Name}.");
-
             if (type == typeof(string))
                 return value;
 
