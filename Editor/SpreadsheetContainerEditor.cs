@@ -21,6 +21,8 @@ namespace NorskaLib.Spreadsheets
         public override void OnInspectorGUI()
         {
             container = (SpreadsheetsContainerBase)target;
+            container.selectedTogglesIds ??= new List<string>();
+
             var contentFieldBinding = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
             var contentField = container.GetType().GetFields(contentFieldBinding)
                 .Where(fi => Attribute.IsDefined(fi, typeof(SpreadsheetContentAttribute)))
@@ -73,7 +75,7 @@ namespace NorskaLib.Spreadsheets
             container.documentId = EditorGUILayout.TextField(
                 new GUIContent(
                     "Document Id",
-                    "The XXXX part in 'https://docs.google.com/spreadsheets/d/XXXX/edit' URL.\n\nNOTE: The document must be accessable by link."),
+                    "The XXXX part in 'https://docs.google.com/spreadsheets/d/XXXX/edit' URL."),
                 container.documentId);
 
             #endregion
@@ -90,7 +92,11 @@ namespace NorskaLib.Spreadsheets
             EditorGUI.BeginDisabledGroup(!anySelected);
             if (GUILayout.Button("None"))
                 SelectAll(false);
+            EditorGUI.EndDisabledGroup();
 
+            var importUnavailable = !anySelected ||
+                                    string.IsNullOrWhiteSpace(container.documentId);
+            EditorGUI.BeginDisabledGroup(importUnavailable);
             if (GUILayout.Button("Import"))
             {
                 var selectedContentFields = contentFields.Where(fi => container.selectedTogglesIds.Contains(fi.Name)).ToArray();
@@ -203,7 +209,6 @@ namespace NorskaLib.Spreadsheets
             if (string.IsNullOrWhiteSpace(container.documentId))
                 throw new Exception($"Document ID is not specified!");
 
-
             EditorUtility.DisplayProgressBar("Downloading definitions", "Initializing...", 0);
 
             importer = new SpreadsheetImporter(content, selectedContentFields.ToArray(), container.documentId);
@@ -213,7 +218,7 @@ namespace NorskaLib.Spreadsheets
             importer.onProgressChanged += OnProgressChanged;
             importer.onOperationFailed += OnOperationFailed;
 
-            importer.Run();
+            _ = importer.Run();
         }
 
         void OnProgressChanged()
